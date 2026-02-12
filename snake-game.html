@@ -438,18 +438,6 @@
             <button id="start-btn">开始游戏</button>
             <button id="pause-btn" disabled>暂停</button>
 
-            <!-- 移动端虚拟方向键 -->
-            <div class="mobile-controls">
-                <div class="d-pad">
-                    <button class="d-pad-btn" data-direction="up">↑</button>
-                    <div class="d-pad-center">
-                        <button class="d-pad-btn" data-direction="left">←</button>
-                        <button class="d-pad-btn" data-direction="right">→</button>
-                    </div>
-                    <button class="d-pad-btn" data-direction="down">↓</button>
-                </div>
-            </div>
-
             <div class="settings-panel">
                 <label for="speed-select">游戏速度:</label>
                 <select id="speed-select">
@@ -464,8 +452,18 @@
             </div>
             <div class="instructions">
                 <span class="pc-only">PC端: 方向键控制</span>
-                <span class="mobile-only">手机端: 虚拟方向键或滑动</span>
+                <span class="mobile-only">手机端: 点击屏幕角落控制方向</span>
             </div>
+        </div>
+
+        <!-- 移动端屏幕角落点击控制 -->
+        <div class="screen-controls" id="screen-controls">
+            <button class="screen-btn" data-direction="up">↑</button>
+            <div class="screen-controls-center">
+                <button class="screen-btn" data-direction="left">←</button>
+                <button class="screen-btn" data-direction="right">→</button>
+            </div>
+            <button class="screen-btn" data-direction="down">↓</button>
         </div>
     </div>
 
