@@ -34,6 +34,81 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .pc-only {
+                display: none;
+            }
+
+            .mobile-only {
+                display: block;
+            }
+
+            .mobile-controls {
+                display: block;
+            }
+
+            .instructions {
+                font-size: 12px;
+                margin-bottom: 10px;
+            }
+
+            .game-container {
+                padding: 12px;
+            }
+
+            .score-panel {
+                font-size: 13px;
+                margin-bottom: 12px;
+            }
+
+            #score, #high-score {
+                font-size: 16px;
+            }
+
+            .stats-panel {
+                font-size: 13px;
+                margin-top: 10px;
+            }
+
+            .stats-panel span {
+                font-size: 15px;
+            }
+
+            /* 移动端调整游戏区域大小 */
+            canvas {
+                width: 340px;
+                height: 340px;
+                display: block;
+                margin: 0 auto;
+            }
+
+            /* 调整游戏区域边距 */
+            .game-container {
+                max-width: 380px;
+                margin: 0 auto;
+            }
+
+            /* 优化控制面板 */
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .settings-panel,
+            .stats-panel {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .stats-panel div {
+                margin: 0;
+            }
+        }
+
         .score-panel {
             display: flex;
             justify-content: space-between;
@@ -173,23 +248,23 @@
 
         .d-pad {
             position: relative;
-            width: 180px;
-            height: 180px;
+            width: 220px;
+            height: 220px;
             margin: 0 auto;
         }
 
         .d-pad-btn {
             position: absolute;
-            width: 50px;
-            height: 50px;
+            width: 65px;
+            height: 65px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 24px;
+            border-radius: 16px;
+            font-size: 28px;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: all 0.2s;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            transition: all 0.15s ease-out;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -198,14 +273,39 @@
         }
 
         .d-pad-btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transform: scale(0.92);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #5568d3 0%, #6c5ce7 100%);
+        }
+
+        /* 添加按钮点击波纹效果 */
+        .d-pad-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .d-pad-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        .d-pad-btn:active::after {
+            width: 100px;
+            height: 100px;
         }
 
         .d-pad-btn:disabled {
-            background: #95a5a6;
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
             cursor: not-allowed;
-            opacity: 0.6;
+            opacity: 0.7;
         }
 
         .d-pad-center {
@@ -213,36 +313,36 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
+            width: 75px;
+            height: 75px;
         }
 
         .d-pad-btn[data-direction="up"] {
-            top: 0;
+            top: 5px;
             left: 50%;
             transform: translateX(-50%);
-            border-radius: 10px 10px 0 0;
+            border-radius: 16px 16px 4px 16px;
         }
 
         .d-pad-btn[data-direction="down"] {
-            bottom: 0;
+            bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
-            border-radius: 0 0 10px 10px;
+            border-radius: 4px 16px 16px 16px;
         }
 
         .d-pad-btn[data-direction="left"] {
-            left: 0;
+            left: 5px;
             top: 50%;
             transform: translateY(-50%);
-            border-radius: 10px 0 0 10px;
+            border-radius: 16px 4px 4px 16px;
         }
 
         .d-pad-btn[data-direction="right"] {
-            right: 0;
+            right: 5px;
             top: 50%;
             transform: translateY(-50%);
-            border-radius: 0 10px 10px 0;
+            border-radius: 4px 16px 16px 4px;
         }
 
         .instructions span {
@@ -898,6 +998,7 @@
         var touchStartY = 0;
         var touchEndX = 0;
         var touchEndY = 0;
+        var currentDirection = null;
 
         canvas.addEventListener('touchstart', function(e) {
             if (!isGameRunning || isPaused || isGameOver) return;
@@ -908,6 +1009,36 @@
 
             // 记录触摸时间
             this.dataset.touchStart = Date.now();
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', function(e) {
+            if (!isGameRunning || isPaused || isGameOver) return;
+
+            e.preventDefault(); // 防止页面滚动
+
+            var touch = e.touches[0];
+            var deltaX = touch.clientX - touchStartX;
+            var deltaY = touch.clientY - touchStartY;
+
+            // 如果已经触发过滑动，不再继续检测
+            if (currentDirection) return;
+
+            // 计算滑动距离
+            var absDeltaX = Math.abs(deltaX);
+            var absDeltaY = Math.abs(deltaY);
+
+            // 最小滑动距离降低到30px，更灵敏
+            if (absDeltaX > 30 || absDeltaY > 30) {
+                // 根据滑动距离较大的方向判断
+                if (absDeltaX > absDeltaY) {
+                    currentDirection = deltaX > 0 ? 'right' : 'left';
+                } else {
+                    currentDirection = deltaY > 0 ? 'down' : 'up';
+                }
+
+                // 显示滑动方向提示
+                showSwipeHint(currentDirection);
+            }
         }, { passive: false });
 
         canvas.addEventListener('touchend', function(e) {
@@ -922,13 +1053,23 @@
             var deltaY = touchEndY - touchStartY;
             var deltaTime = Date.now() - parseInt(this.dataset.touchStart);
 
-            // 设置最小滑动距离（50px）和最短时间（100ms），避免误触
-            if (deltaTime > 100 && (Math.abs(deltaX) > 50 || Math.abs(deltaY) > 50)) {
+            // 清除滑动提示
+            hideSwipeHint();
+
+            // 如果已经通过touchmove触发了方向，不再重复处理
+            if (currentDirection) {
+                handleDirectionInput(currentDirection);
+                currentDirection = null;
+                return;
+            }
+
+            // 设置最小滑动距离（30px）和最短时间（80ms），更灵敏
+            if (deltaTime > 80 && (Math.abs(deltaX) > 30 || Math.abs(deltaY) > 30)) {
                 // 计算滑动角度
                 var angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
 
                 // 根据滑动方向控制蛇
-                // 上滑：-90度左右
+                // 上滑：-135度左右
                 if (angle > -135 && angle < -45) {
                     handleDirectionInput('up');
                 }
@@ -945,7 +1086,65 @@
                     handleDirectionInput('right');
                 }
             }
+
+            // 短暂延迟后允许新的滑动
+            setTimeout(function() {
+                currentDirection = null;
+            }, 100);
         }, { passive: false });
+
+        /**
+         * 显示滑动方向提示
+         */
+        function showSwipeHint(direction) {
+            // 移除旧的提示
+            hideSwipeHint();
+
+            var hintText = '';
+            var hintColor = '';
+
+            switch (direction) {
+                case 'up':
+                    hintText = '↑';
+                    hintColor = '#27ae60';
+                    break;
+                case 'down':
+                    hintText = '↓';
+                    hintColor = '#e74c3c';
+                    break;
+                case 'left':
+                    hintText = '←';
+                    hintColor = '#3498db';
+                    break;
+                case 'right':
+                    hintText = '→';
+                    hintColor = '#e67e22';
+                    break;
+            }
+
+            // 显示提示
+            ctx.save();
+            ctx.fillStyle = hintColor;
+            ctx.globalAlpha = 0.8;
+            ctx.font = '60px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(hintText, canvas.width / 2, canvas.height / 2);
+            ctx.restore();
+
+            // 200ms后自动隐藏
+            setTimeout(hideSwipeHint, 200);
+        }
+
+        /**
+         * 隐藏滑动方向提示
+         */
+        function hideSwipeHint() {
+            // 如果游戏正在运行且未暂停，重绘游戏
+            if (isGameRunning && !isPaused) {
+                draw();
+            }
+        }
 
         // 初始化显示
         initSnake();
