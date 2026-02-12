@@ -170,7 +170,8 @@
             gridSize: 20,
             gameSpeed: 150,
             boardWidth: 400,
-            boardHeight: 400
+            boardHeight: 400,
+            tileCount: 20
         };
 
         // 游戏状态
@@ -203,14 +204,15 @@
 
         /**
          * 初始化游戏蛇
-         * 蛇由多个格子组成，初始位置在中心
+         * 蛇由多个格子组成，初始位置在中心向右延伸
          */
         function initSnake() {
             snake = [];
             var startX = Math.floor(tileCount / 2);
             var startY = Math.floor(tileCount / 2);
-            for (var i = 0; i < 3; i++) {
-                snake.push({x: startX - i, y: startY});
+            // 从中心向右延伸，确保不靠近边界
+            for (var i = 0; i < 5; i++) {
+                snake.push({x: startX + i, y: startY});
             }
         }
 
@@ -327,28 +329,6 @@
                 // 没吃到食物，移除蛇尾
                 snake.pop();
             }
-        }
-
-        /**
-         * 检测碰撞
-         * 检测蛇是否撞到边界或自身
-         */
-        function checkCollision() {
-            var head = snake[0];
-
-            // 边界碰撞检测
-            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-                return true;
-            }
-
-            // 自身碰撞检测
-            for (var i = 1; i < snake.length; i++) {
-                if (head.x === snake[i].x && head.y === snake[i].y) {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /**
