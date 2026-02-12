@@ -434,14 +434,14 @@
 
         // 事件监听 - 键盘按键
         document.addEventListener('keydown', function(event) {
-            // 如果游戏未运行或已结束，不响应方向键
-            if (!isGameRunning || isGameOver) {
-                return;
-            }
-
             // 防止方向键滚动页面
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(event.keyCode) > -1) {
                 event.preventDefault();
+            }
+
+            // 如果游戏未运行或已结束，不响应方向键
+            if (!isGameRunning || isGameOver) {
+                return;
             }
 
             // 根据按键改变方向（不能反向移动）
