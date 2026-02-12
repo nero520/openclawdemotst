@@ -166,6 +166,126 @@
             font-weight: bold;
         }
 
+        .mobile-controls {
+            display: none;
+            margin: 15px 0;
+        }
+
+        .d-pad {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+        }
+
+        .d-pad-btn {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .d-pad-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .d-pad-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .d-pad-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+        }
+
+        .d-pad-btn[data-direction="up"] {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px 10px 0 0;
+        }
+
+        .d-pad-btn[data-direction="down"] {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 0 0 10px 10px;
+        }
+
+        .d-pad-btn[data-direction="left"] {
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 10px 0 0 10px;
+        }
+
+        .d-pad-btn[data-direction="right"] {
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 0 10px 10px 0;
+        }
+
+        .instructions span {
+            display: block;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        .pc-only {
+            display: block;
+        }
+
+        .mobile-only {
+            display: none;
+        }
+
+        /* 移动端样式优化 */
+        @media (max-width: 768px) {
+            .pc-only {
+                display: none;
+            }
+
+            .mobile-only {
+                display: block;
+            }
+
+            .mobile-controls {
+                display: block;
+            }
+
+            .instructions {
+                font-size: 12px;
+            }
+
+            .game-container {
+                padding: 15px;
+            }
+
+            .score-panel {
+                font-size: 14px;
+            }
+        }
+
         #settings-modal {
             display: none;
             position: fixed;
@@ -217,6 +337,19 @@
         <div class="controls">
             <button id="start-btn">开始游戏</button>
             <button id="pause-btn" disabled>暂停</button>
+
+            <!-- 移动端虚拟方向键 -->
+            <div class="mobile-controls">
+                <div class="d-pad">
+                    <button class="d-pad-btn" data-direction="up">↑</button>
+                    <div class="d-pad-center">
+                        <button class="d-pad-btn" data-direction="left">←</button>
+                        <button class="d-pad-btn" data-direction="right">→</button>
+                    </div>
+                    <button class="d-pad-btn" data-direction="down">↓</button>
+                </div>
+            </div>
+
             <div class="settings-panel">
                 <label for="speed-select">游戏速度:</label>
                 <select id="speed-select">
@@ -230,7 +363,8 @@
                 <div>平均分数: <span id="average-score">0</span></div>
             </div>
             <div class="instructions">
-                使用方向键 <span class="key">↑</span><span class="key">↓</span><span class="key">←</span><span class="key">→</span> 控制移动
+                <span class="pc-only">PC端: 方向键控制</span>
+                <span class="mobile-only">手机端: 虚拟方向键或滑动</span>
             </div>
         </div>
     </div>
@@ -709,6 +843,109 @@
                 settingsModal.style.display = 'none';
             }
         });
+
+        // ===== 虚拟方向键控制 =====
+        var dPadButtons = document.querySelectorAll('.d-pad-btn');
+        dPadButtons.forEach(function(btn) {
+            btn.addEventListener('touchstart', function(e) {
+                e.preventDefault(); // 防止触摸延迟和默认行为
+                var direction = this.getAttribute('data-direction');
+                handleDirectionInput(direction);
+            });
+
+            btn.addEventListener('mousedown', function(e) {
+                var direction = this.getAttribute('data-direction');
+                handleDirectionInput(direction);
+            });
+        });
+
+        /**
+         * 处理方向输入（兼容键盘和触摸）
+         */
+        function handleDirectionInput(direction) {
+            // 如果游戏未运行或已暂停或已结束，不响应方向输入
+            if (!isGameRunning || isPaused || isGameOver) {
+                return;
+            }
+
+            // 根据按键改变方向（不能反向移动）
+            switch (direction) {
+                case 'up':
+                    if (direction !== 'down') {
+                        nextDirection = 'up';
+                    }
+                    break;
+                case 'down':
+                    if (direction !== 'up') {
+                        nextDirection = 'down';
+                    }
+                    break;
+                case 'left':
+                    if (direction !== 'right') {
+                        nextDirection = 'left';
+                    }
+                    break;
+                case 'right':
+                    if (direction !== 'left') {
+                        nextDirection = 'right';
+                    }
+                    break;
+            }
+        }
+
+        // ===== 触摸滑动控制 =====
+        var touchStartX = 0;
+        var touchStartY = 0;
+        var touchEndX = 0;
+        var touchEndY = 0;
+
+        canvas.addEventListener('touchstart', function(e) {
+            if (!isGameRunning || isPaused || isGameOver) return;
+
+            var touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+
+            // 记录触摸时间
+            this.dataset.touchStart = Date.now();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', function(e) {
+            if (!isGameRunning || isPaused || isGameOver) return;
+
+            var touch = e.changedTouches[0];
+            touchEndX = touch.clientX;
+            touchEndY = touch.clientY;
+
+            // 计算滑动距离和时间
+            var deltaX = touchEndX - touchStartX;
+            var deltaY = touchEndY - touchStartY;
+            var deltaTime = Date.now() - parseInt(this.dataset.touchStart);
+
+            // 设置最小滑动距离（50px）和最短时间（100ms），避免误触
+            if (deltaTime > 100 && (Math.abs(deltaX) > 50 || Math.abs(deltaY) > 50)) {
+                // 计算滑动角度
+                var angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+
+                // 根据滑动方向控制蛇
+                // 上滑：-90度左右
+                if (angle > -135 && angle < -45) {
+                    handleDirectionInput('up');
+                }
+                // 下滑：90度左右
+                else if (angle > 45 && angle < 135) {
+                    handleDirectionInput('down');
+                }
+                // 左滑：-180到-45度，或0到45度
+                else if (angle <= -135 || (angle > 0 && angle <= 45)) {
+                    handleDirectionInput('left');
+                }
+                // 右滑：45到135度，或-180到-45度
+                else if (angle >= 135 || (angle < 0 && angle > -45)) {
+                    handleDirectionInput('right');
+                }
+            }
+        }, { passive: false });
 
         // 初始化显示
         initSnake();
