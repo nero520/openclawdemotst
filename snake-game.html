@@ -824,6 +824,8 @@
             gameOverModal.style.display = 'none';
 
             // 重置游戏状态
+            score = 0;
+            scoreElement.textContent = score;
             isGameRunning = false;
             isGameOver = false;
             isPaused = false;
