@@ -823,9 +823,11 @@
             // 隐藏游戏结束界面
             gameOverModal.style.display = 'none';
 
-            // 重置游戏状态
+            // 重置分数
             score = 0;
             scoreElement.textContent = score;
+
+            // 重置游戏状态
             isGameRunning = false;
             isGameOver = false;
             isPaused = false;
@@ -835,6 +837,10 @@
             pauseButton.disabled = true;
             pauseButton.textContent = '暂停';
             gameStatusElement.textContent = '等待开始';
+
+            // 重新初始化蛇和食物
+            initSnake();
+            generateFood();
 
             // 清空画布
             ctx.fillStyle = '#2c3e50';
