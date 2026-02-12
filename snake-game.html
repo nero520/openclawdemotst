@@ -204,15 +204,16 @@
 
         /**
          * 初始化游戏蛇
-         * 蛇由多个格子组成，初始位置在中心向右延伸
+         * 蛇由多个格子组成，初始位置在中心向左延伸
+         * 这样第一次向右移动后，蛇头不会碰到蛇身
          */
         function initSnake() {
             snake = [];
             var startX = Math.floor(tileCount / 2);
             var startY = Math.floor(tileCount / 2);
-            // 从中心向右延伸，确保不靠近边界
+            // 从中心向左延伸，第一次向右移动后安全
             for (var i = 0; i < 5; i++) {
-                snake.push({x: startX + i, y: startY});
+                snake.push({x: startX - i, y: startY});
             }
         }
 
